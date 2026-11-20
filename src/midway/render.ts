@@ -3,6 +3,7 @@ import bannerUrl from './aidevcon-banner.png';
 import { palette } from './palette';
 import {
   CART_KINDS,
+  jumpHeight,
   toScreen,
   type BoothSlot,
   type MidwayMap,
@@ -791,7 +792,14 @@ function person(
   x: number,
   y: number,
   look: Look,
-  options: { swing?: number; back?: boolean; dir?: number; player?: boolean; t?: number } = {},
+  options: {
+    swing?: number;
+    back?: boolean;
+    dir?: number;
+    player?: boolean;
+    t?: number;
+    lift?: number;
+  } = {},
 ) {
   const swing = options.swing ?? 0;
   const dir = options.dir ?? 1;
@@ -803,6 +811,8 @@ function person(
     ctx.ellipse(x, y, 8, 3.5, 0, 0, Math.PI * 2);
     ctx.stroke();
   }
+  // A jump lifts the body; the shadow and the ring stay on the ground.
+  y -= options.lift ?? 0;
   stroke(
     ctx,
     [
@@ -1624,6 +1634,7 @@ export function drawWalker(ctx: Ctx, walker: Walker, look: Look, player = false,
     dir: walker.flipped ? -1 : 1,
     player,
     t,
+    lift: jumpHeight(walker),
   });
 }
 

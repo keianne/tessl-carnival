@@ -8,11 +8,16 @@ import {
   followPath,
   inputDirection,
   isBlocked,
+  JUMP_HEIGHT,
+  JUMP_TIME,
+  jumpHeight,
   layoutMidway,
   pathToBooth,
   seededRandom,
+  startJump,
   toScreen,
   toTile,
+  updateJump,
   updateVisitor,
   walk,
 } from './world';
@@ -179,5 +184,38 @@ describe('visitors', () => {
       expect(isBlocked(map, Math.floor(visitor.x), Math.floor(visitor.y))).toBe(false);
       expect(visitor.stride).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('jumping', () => {
+  it('rises to its peak halfway through, then lands', () => {
+    const walker = createWalker({ x: 2, y: 2 });
+    expect(jumpHeight(walker)).toBe(0);
+    expect(startJump(walker)).toBe(true);
+    updateJump(walker, JUMP_TIME / 4);
+    const rising = jumpHeight(walker);
+    expect(rising).toBeGreaterThan(0);
+    updateJump(walker, JUMP_TIME / 4);
+    expect(jumpHeight(walker)).toBeCloseTo(JUMP_HEIGHT);
+    expect(jumpHeight(walker)).toBeGreaterThan(rising);
+    updateJump(walker, JUMP_TIME);
+    expect(jumpHeight(walker)).toBe(0);
+    expect(walker.jump).toBe(0);
+  });
+
+  it("can't jump again while in the air", () => {
+    const walker = createWalker({ x: 2, y: 2 });
+    startJump(walker);
+    updateJump(walker, JUMP_TIME / 2);
+    expect(startJump(walker)).toBe(false);
+    updateJump(walker, JUMP_TIME / 2);
+    expect(startJump(walker)).toBe(true);
+  });
+
+  it('stays where it is on the map', () => {
+    const walker = createWalker({ x: 2, y: 2 });
+    startJump(walker);
+    updateJump(walker, JUMP_TIME / 2);
+    expect({ x: walker.x, y: walker.y }).toEqual({ x: 2, y: 2 });
   });
 });
